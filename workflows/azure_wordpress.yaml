@@ -10,19 +10,16 @@ parameters:
     type: String
     lookup: wordpress.dbuser
   dbpass:
-    type: String[8-50]
+    type: String[10]
     lookup: wordpress.dbpass
 steps:
- # this follow the terraform module: https://github.com/foreverXZC/terraform-azurerm-mysql
- # first we need a resource group
- resource_group:
-    returns: resource_group_name
+  # this follow the terraform module: https://github.com/foreverXZC/terraform-azurerm-mysql
+  # first we need a resource group
+  resource_group:
+    returns: resource_group_id
     AzureRM::Resource_group:
       name: lyra_mysql_rg
       location: $location
-      tags:
-        environment: "Lyra Example"
-  # next we need a server instance
   mysql_server:
     returns: mysql_server_id
     AzureRM::Mysql_server:
@@ -30,13 +27,13 @@ steps:
       location: $location
       administrator_login: $dbuser
       administrator_login_password: $dbpass
-      resource_group_name: $resource_group_name
+      resource_group_name: lyra_mysql_rg
   # now we can actually create the database
   mysql_db:
     returns: mysql_database_id
     AzureRM::Mysql_database:
       name: lyra_db
-      resource_group_name: $resource_group_name
+      resource_group_name: lyra_mysql_rg
       server_name: $mysql_server_id
   # and then add a firewall rule to access it
   mysql_fw_rule:
@@ -44,7 +41,7 @@ steps:
     AzureRM::Mysql_firewall_rule:
       name: permit_webhosts
       server_name: $mysql_server_id
-      resource_group_name: $resource_group_name
+      resource_group_name: lyra_mysql_rg
       start_ip_address: 192.168.1.2
       end_ip_address: 192.168.1.255
   # now we can use Helm to do the app deployment onto kubernetes

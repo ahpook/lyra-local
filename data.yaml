@@ -1,0 +1,5 @@
+wordpress:
+  location: ukwest
+  blogname: my awesome blog
+  dbuser: lyrauser
+  dbpass: Awesom3p4ass
