@@ -18,40 +18,52 @@ steps:
   resource_group:
     returns: resource_group_id
     AzureRM::Resource_group:
-      name: lyra_mysql_rg
+      name: lyra-mysql-rg
       location: $location
   mysql_server:
     returns: mysql_server_id
     AzureRM::Mysql_server:
-      name: lyra_mysql_server
+      name: lyra-mysql-server
       location: $location
       administrator_login: $dbuser
       administrator_login_password: $dbpass
-      resource_group_name: lyra_mysql_rg
+      resource_group_name: lyra-mysql-rg
+      ssl_enforcement: Enabled
+      version: "5.7"
+      sku:
+        name: B_Gen5_2
+        capacity: 2
+        tier: Basic
+        family: Gen5
+      storage_profile:
+        storage_mb: 5120
+        backup_retention_days: 7
+        geo_redundant_backup: "Disabled"
+      
   # now we can actually create the database
   mysql_db:
     returns: mysql_database_id
     AzureRM::Mysql_database:
-      name: lyra_db
-      resource_group_name: lyra_mysql_rg
+      name: lyra-db
+      resource_group_name: lyra-mysql-rg
       server_name: $mysql_server_id
   # and then add a firewall rule to access it
   mysql_fw_rule:
     returns: mysql_firewall_rule_id
     AzureRM::Mysql_firewall_rule:
-      name: permit_webhosts
+      name: permit-webhosts
       server_name: $mysql_server_id
-      resource_group_name: lyra_mysql_rg
+      resource_group_name: lyra-mysql-rg
       start_ip_address: 192.168.1.2
       end_ip_address: 192.168.1.255
   # now we can use Helm to do the app deployment onto kubernetes
   # this does require a funcitoning helm/tiller that we can access
   # with kubernetes creds.  (and note, direct helm support is not yet working)
-  wordpress:
-    Helm::Wordpress:
-      wordpressBlogName: $blogname
-      externaldatabase:
-        host: $mysql_server_id
-        database: $mysql_database_id
-        user: $dbuser
-        password: $dbpass
+  #wordpress:
+  #  Helm::Wordpress:
+  #    wordpressBlogName: $blogname
+  #    externaldatabase:
+  #      host: $mysql_server_id
+  #      database: $mysql_database_id
+  #      user: $dbuser
+  #      password: $dbpass
