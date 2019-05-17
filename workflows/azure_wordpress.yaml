@@ -44,14 +44,13 @@ steps:
       resource_group_name: lyra_mysql_rg
       start_ip_address: 192.168.1.2
       end_ip_address: 192.168.1.255
-  # now we can use Helm to do the app deployment onto kubernetes
-  # this does require a funcitoning helm/tiller that we can access
-  # with kubernetes creds.  (and note, direct helm support is not yet working)
-  wordpress:
-    Helm::Wordpress:
-      wordpressBlogName: $blogname
-      externaldatabase:
-        host: $mysql_server_id
-        database: $mysql_database_id
-        user: $dbuser
-        password: $dbpass
+ # here's the actual wordpress deployment - modelled
+ # after the kubernetes sample doc
+#  wordpress:
+#    Helm::Wordpress:
+#      wordpressBlogName: $blogname
+#      externaldatabase:
+#        host: $mysql_server_id
+#        database: $mysql_database_id
+#        user: $dbuser
+#        password: $dbpass
