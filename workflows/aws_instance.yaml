@@ -1,0 +1,17 @@
+parameters:
+  tags:
+    type: Hash[String,String]
+    lookup: aws.tags
+returns:
+  public_ip: String
+steps:
+  instance:
+    returns: 
+      public_ip: public_ip
+    Aws::Instance:
+      instance_type: 't2.micro'
+      ami: 'ami-0ff760d16d9497662'
+      key_name: dimitri.tischenko.eu-west1
+      subnet_id: subnet-b4dcc4c2
+      security_groups: ['sg-5a77b423']
+      tags: $tags
