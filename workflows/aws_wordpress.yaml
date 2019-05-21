@@ -24,6 +24,8 @@ steps:
           protocol: 'tcp'
           cidr_blocks: ['0.0.0.0/0']
   aws_db:
+    returns:
+      database_endpoint: endpoint
     Aws::Db_instance:
       identifier: lyra-wordpress
       engine: mysql
@@ -37,14 +39,22 @@ steps:
       publicly_accessible: true
       skip_final_snapshot: true
       deletion_protection: false
+      final_snapshot_identifier: foo
       vpc_security_group_ids: [$security_group_id]
 
   helm:
     parameters:
-      name: {value: "wordpress"}
+      endpoint: {value: $database_endpoint}
+      name: {value: "wprelease"}
       chart: {value: "stable/wordpress"}
       namespace: {value: null}     
-      overrides: {value: ["wordpressUsername=wpuser", "wordpressPassword=wppass123", "wordpressBlogName=The Lyra Blog", "externalDatabase.Host=lyra-wordpress.c3o7vdgqsvan.eu-west-1.rds.amazonaws.com"]}
+      overrides: 
+        value: 
+        - "wordpressUsername=wpuser"
+        - "wordpressPassword=wppass123"
+        - "wordpressBlogName=The Lyra Blog"
+        - "mariadb.enabled=false"
+        - "externalDatabase.Host=lyra-wordpress.c3o7vdgqsvan.eu-west-1.rds.amazonaws.com"
     returns:
       helm_output: output
     call: helm_go
