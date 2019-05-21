@@ -21,6 +21,7 @@ steps:
       name: lyra-mysql-rg
       location: $location
   mysql_server:
+    parameters: resource_group_id # we are not using it, but forcing resource_group to be created first
     returns: mysql_server_id
     AzureRM::Mysql_server:
       name: lyra-mysql-server
@@ -54,8 +55,8 @@ steps:
       name: permit-webhosts
       server_name: $mysql_server_id
       resource_group_name: lyra-mysql-rg
-      start_ip_address: 192.168.1.2
-      end_ip_address: 192.168.1.255
+      start_ip_address: 95.215.121.72
+      end_ip_address: 95.215.121.72
   # now we can use Helm to do the app deployment onto kubernetes
   # this does require a funcitoning helm/tiller that we can access
   # with kubernetes creds.  (and note, direct helm support is not yet working)
