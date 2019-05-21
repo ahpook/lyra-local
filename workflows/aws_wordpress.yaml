@@ -1,0 +1,50 @@
+steps:
+  aws_db_group:
+    returns: 
+      subnet_group_name: name
+    Aws::Db_subnet_group:
+      name: wordpress
+      description: Wordpress db subnet group
+      subnet_ids:
+        - subnet-42ec6835
+        - subnet-9162bcc8
+      tags:
+        Name: Wordpress db subnet group
+  aws_security_group:
+    returns:
+      security_group_id: security_group_id
+    Aws::Security_group:
+      name: wordpress
+      description: Wordpress DB security group
+      vpc_id: vpc-1f47e77a
+      ingress:
+        -
+          from_port: 3306
+          to_port: 3306
+          protocol: 'tcp'
+          cidr_blocks: ['0.0.0.0/0']
+  aws_db:
+    Aws::Db_instance:
+      identifier: lyra-wordpress
+      engine: mysql
+      instance_class: db.t2.micro
+      name: wordpress
+      username: wpuser
+      password: wppass123
+      allocated_storage: 20
+      storage_type: gp2
+      db_subnet_group_name: $subnet_group_name
+      publicly_accessible: true
+      skip_final_snapshot: true
+      deletion_protection: false
+      vpc_security_group_ids: [$security_group_id]
+
+  helm:
+    parameters:
+      name: {value: "wordpress"}
+      chart: {value: "stable/wordpress"}
+      namespace: {value: null}     
+      overrides: {value: ["wordpressUsername=wpuser", "wordpressPassword=wppass123", "wordpressBlogName=The Lyra Blog", "externalDatabase.Host=lyra-wordpress.c3o7vdgqsvan.eu-west-1.rds.amazonaws.com"]}
+    returns:
+      helm_output: output
+    call: helm_go
