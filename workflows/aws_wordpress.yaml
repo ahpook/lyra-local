@@ -39,7 +39,6 @@ steps:
       publicly_accessible: true
       skip_final_snapshot: true
       deletion_protection: false
-      final_snapshot_identifier: foo
       vpc_security_group_ids: [$security_group_id]
 
   helm:
@@ -50,11 +49,12 @@ steps:
       namespace: {value: null}     
       overrides: 
         value: 
-        - "wordpressUsername=wpuser"
-        - "wordpressPassword=wppass123"
         - "wordpressBlogName=The Lyra Blog"
         - "mariadb.enabled=false"
-        - "externalDatabase.Host=lyra-wordpress.c3o7vdgqsvan.eu-west-1.rds.amazonaws.com"
+        - "externalDatabase.database=wordpress"
+        - "externalDatabase.user=wpuser"
+        - "externalDatabase.password=wppass123"
+        - "externalDatabase.host=lyra-wordpress.c3o7vdgqsvan.eu-west-1.rds.amazonaws.com"
     returns:
       helm_output: output
     call: helm_go
