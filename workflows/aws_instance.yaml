@@ -5,13 +5,13 @@ parameters:
 returns:
   public_ip: String
 steps:
-  instance:
-    returns: 
+  instance1:
+    returns:
       public_ip: public_ip
     Aws::Instance:
-      instance_type: 't2.micro'
-      ami: 'ami-0ff760d16d9497662'
-      key_name: dimitri.tischenko.eu-west1
-      subnet_id: subnet-b4dcc4c2
-      security_groups: ['sg-5a77b423']
+      instance_type: 't3.micro'
+      ami: 'ami-3548444c'
+      subnet_id: 'subnet-1aef766c '
+      key_name: bolt_ws_key
+      security_groups: ['sg-d98287be']
       tags: $tags
