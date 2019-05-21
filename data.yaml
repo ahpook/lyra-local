@@ -3,3 +3,10 @@ wordpress:
   blogname: my awesome blog
   dbuser: lyrauser
   dbpass: Awesom3p4ass
+aws:
+  tags:
+    Name:       lyra-sample
+    created_by: lyra
+    department: engineering
+    project:    incubator
+    lifetime:   1h
