@@ -1,23 +1,38 @@
+parameters:
+  rootpw:
+    type: String
+    lookup: myapp.rootpw
+  db:
+    type: String
+    lookup: myapp.db
+  dbuser:
+    type: String
+    lookup: myapp.dbuser
+  dbpass:
+    type: String[10]
+    lookup: myapp.dbpass
+  dbimage:
+    type: String
+    lookup: myapp.dbimage
+  appimage:
+    type: String
+    lookup: myapp.appimage
 returns:
- MyApp_namespace: String
- MyAppDB_ID: String
- MyApp_ID: String
- MyAppDB_service_ID: String
- MyApp_service_ID: String
+  myapp_service: String
 steps:
-  MyApp_namespace:
+  namespace:
     returns:
-      MyApp_namespace: namespace_id
+      myapp_namespace: namespace_id
     Kubernetes::Namespace:
       metadata:
         name: myapp-ns
         labels:
           name: myapp-ns
-  MyAppDB_deployment:
+  myappdb_deployment:
     parameters:
-      - MyApp_namespace
+      - myapp_namespace
     returns:
-      MyAppDB_ID: deployment_id
+      myappdb_id: deployment_id
     Kubernetes::Deployment:
       metadata:
         name: myapp-db
@@ -37,26 +52,25 @@ steps:
             container:
             - env:
               - name: MYSQL_ROOT_PASSWORD
-                value: abcd12345
+                value: $rootpw
               - name: MYSQL_DATABASE
-                value: myapp_db
+                value: $db
               - name: MYSQL_USER
-                value: myapp_user
+                value: $dbuser
               - name: MYSQL_PASSWORD
-                value: efgh67890
-              image: puppetseteam/pfc-myapp-db:461721
+                value: $dbpass
+              image: $dbimage
               name: myapp-db
               port:
               - container_port: 3306
                 host_port: 3306
                 name: mysql
                 protocol: TCP
-  MyAppDB_service:
+  myappdb_service:
     parameters:
-      - MyApp_namespace
-      - MyAppDB_ID
+      - myappdb_id
     returns:
-      MyAppDB_service_ID: service_id
+      myappdb_svc: service_id
     Kubernetes::Service:
       metadata:
         name: myapp-db-service
@@ -70,13 +84,11 @@ steps:
             port: 3306
             target_port: '3306'
         type: NodePort
-  MyApp_deployment:
+  myapp_deployment:
     parameters:
-      - MyApp_namespace
-      - MyAppDB_ID
-      - MyAppDB_service_ID
+      - myappdb_svc
     returns:
-      MyApp_ID: deployment_id
+      myapp_id: deployment_id
     Kubernetes::Deployment:
       metadata:
         name: myapp
@@ -96,28 +108,25 @@ steps:
             container:
             - env:
               - name: MYSQL_DATABASE
-                value: myapp_db
+                value: $db
               - name: MYSQL_USER
-                value: myapp_user
+                value: $dbuser
               - name: MYSQL_PASSWORD
-                value: efgh67890
+                value: $dbpass
               - name: MYSQL_SVC
                 value: myapp-db-service
-              image: puppetseteam/pfc-myapp:538377
+              image: $appimage
               name: myapp
               port:
               - container_port: 80
                 host_port: 80
                 name: http
                 protocol: TCP
-  MyApp_service:
+  myapp_service:
     parameters:
-      - MyApp_namespace
-      - MyAppDB_ID
-      - MyAppDB_service_ID
-      - MyApp_ID
+      - myapp_id
     returns:
-      MyApp_service_ID: service_id
+      myapp_service: load_balancer_ingress
     Kubernetes::Service:
       metadata:
         name: myapp-service

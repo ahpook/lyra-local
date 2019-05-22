@@ -1,13 +1,13 @@
 ---
 version: 5
 defaults:
-  data_dir: hiera
+  datadir: hiera
   data_hash: yaml_data
 
 hierarchy:
   - name: "Environmental overrides"
     path: "environments/%{environment}.yaml"
-    data_dir: hiera
+    datadir: hiera
   - name: "Fall through defaults"
     path: "defaults.yaml"
-    data_dir: hiera
+    datadir: hiera
