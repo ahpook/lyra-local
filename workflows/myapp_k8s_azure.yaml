@@ -1,0 +1,118 @@
+steps:
+  resource_group:
+    returns:
+      myappdb_rg_name: name
+    AzureRM::Resource_group:
+      name: myapp-db-rg
+      location: West Europe
+  azure_db_instance:
+    parameters:
+      - myappdb_rg_name
+    returns:
+      db_address: fqdn
+    AzureRM::Mysql_server:
+      name: myapp-db
+      location: West Europe
+      resource_group_name: $myappdb_rg_name
+      sku:
+        name: B_Gen5_1
+        capacity: 1
+        tier: Basic
+        family: Gen5
+      storage_profile:
+        storage_mb: 5120
+        backup_retention_days: 7
+        geo_redundant_backup: Disabled
+      administrator_login: myapp_user
+      administrator_login_password: 'C0mpl3xP@ssw0rd!'
+      version: '5.7'
+      ssl_enforcement: Disabled
+  azure_db:
+    parameters:
+      - db_address
+    returns:
+      db_id: mysql_database_id
+    AzureRM::Mysql_database:
+      name: myapp_db
+      resource_group_name: $myappdb_rg_name
+      server_name: myapp-db
+      charset: utf8
+      collation: utf8_unicode_ci
+  MyApp_namespace:
+    returns:
+      MyApp_namespace: namespace_id
+    Kubernetes::Namespace:
+      metadata:
+        name: myapp-ns
+        labels:
+          name: myapp-ns
+  MyApp_deployment:
+    parameters:
+      - MyApp_namespace
+      - db_address
+    returns:
+      MyApp_ID: deployment_id
+    Kubernetes::Deployment:
+      metadata:
+        name: myapp
+        namespace: myapp-ns
+        labels:
+          app: myapp
+      spec:
+        replicas: 1
+        selector:
+          match_labels:
+            app: myapp
+        template:
+          metadata:
+            labels:
+              app: myapp
+          spec:
+            init_container:
+            - env:
+              - name: LYRA_DBNAME
+                value: myapp_db
+              - name: LYRA_DBUSER
+                value: myapp_user
+              - name: LYRA_DBPASS
+                value: efgh67890
+              - name: LYRA_DBHOST
+                value: $db_address
+              image: puppetseteam/myappdb_sampledata
+              name: myapp-init
+            container:
+            - env:
+              - name: MYSQL_DATABASE
+                value: myapp_db
+              - name: MYSQL_USER
+                value: myapp_user
+              - name: MYSQL_PASSWORD
+                value: efgh67890
+              - name: MYSQL_SVC
+                value: $db_address
+              image: puppetseteam/pfc-myapp:538377
+              name: myapp
+              port:
+              - container_port: 80
+                host_port: 80
+                name: http
+                protocol: TCP
+  MyApp_service:
+    parameters:
+      - MyApp_namespace
+      - MyApp_ID
+    returns:
+      MyApp_service_ID: service_id
+    Kubernetes::Service:
+      metadata:
+        name: myapp-service
+        namespace: myapp-ns
+      spec:
+        selector:
+          app: myapp
+        port:
+          -
+            protocol: TCP
+            port: 80
+            target_port: '80'
+        type: LoadBalancer

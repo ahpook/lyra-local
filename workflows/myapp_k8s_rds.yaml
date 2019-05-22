@@ -1,0 +1,113 @@
+returns:
+  db_address: String
+  MyApp_service_ID: String
+steps:
+  aws_db_group:
+    returns: 
+      subnet_group_name: name
+    Aws::Db_subnet_group:
+      name: myapp-db-subnet
+      subnet_ids:
+        - subnet-1aef766c
+        - subnet-0b731f6f
+      tags:
+        Name: MyApp-DB subnet group
+  aws_db:
+    parameters:
+      - subnet_group_name
+    returns:
+      db_address: address
+    Aws::Db_instance:
+      engine: mysql
+      instance_class: db.t2.micro
+      identifier: myapp-db
+      final_snapshot_identifier: foo
+      skip_final_snapshot: true
+      name: myapp_db
+      username: myapp_user
+      password: efgh67890
+      port: 3306
+      publicly_accessible: true
+      allocated_storage: 20
+      storage_type: gp2
+      db_subnet_group_name: $subnet_group_name
+      vpc_security_group_ids:
+        - sg-d98287be
+  MyApp_namespace:
+    returns:
+      MyApp_namespace: namespace_id
+    Kubernetes::Namespace:
+      metadata:
+        name: myapp-ns
+        labels:
+          name: myapp-ns
+  MyApp_deployment:
+    parameters:
+      - MyApp_namespace
+      - db_address
+    returns:
+      MyApp_ID: deployment_id
+    Kubernetes::Deployment:
+      metadata:
+        name: myapp
+        namespace: myapp-ns
+        labels:
+          app: myapp
+      spec:
+        replicas: 1
+        selector:
+          match_labels:
+            app: myapp
+        template:
+          metadata:
+            labels:
+              app: myapp
+          spec:
+            init_container:
+            - env:
+              - name: LYRA_DBNAME
+                value: myapp_db
+              - name: LYRA_DBUSER
+                value: myapp_user
+              - name: LYRA_DBPASS
+                value: efgh67890
+              - name: LYRA_DBHOST
+                value: $db_address
+              image: puppetseteam/myappdb_sampledata
+              name: myapp-init
+            container:
+            - env:
+              - name: MYSQL_DATABASE
+                value: myapp_db
+              - name: MYSQL_USER
+                value: myapp_user
+              - name: MYSQL_PASSWORD
+                value: efgh67890
+              - name: MYSQL_SVC
+                value: $db_address
+              image: puppetseteam/pfc-myapp:538377
+              name: myapp
+              port:
+              - container_port: 80
+                host_port: 80
+                name: http
+                protocol: TCP
+  MyApp_service:
+    parameters:
+      - MyApp_namespace
+      - MyApp_ID
+    returns:
+      MyApp_service_ID: service_id
+    Kubernetes::Service:
+      metadata:
+        name: myapp-service
+        namespace: myapp-ns
+      spec:
+        selector:
+          app: myapp
+        port:
+          -
+            protocol: TCP
+            port: 80
+            target_port: '80'
+        type: LoadBalancer
