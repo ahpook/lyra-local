@@ -1,3 +1,19 @@
+parameters:
+  db:
+    type: String
+    lookup: myapp.db
+  dbuser:
+    type: String
+    lookup: myapp.dbuser
+  dbpass:
+    type: String[10]
+    lookup: myapp.dbpass
+  appimage:
+    type: String
+    lookup: myapp.appimage
+returns:
+  db_address: String
+  myapp_service_id: String
 steps:
   resource_group:
     returns:
@@ -23,8 +39,8 @@ steps:
         storage_mb: 5120
         backup_retention_days: 7
         geo_redundant_backup: Disabled
-      administrator_login: myapp_user
-      administrator_login_password: 'C0mpl3xP@ssw0rd!'
+      administrator_login: $dbuser
+      administrator_login_password: $dbpass
       version: '5.7'
       ssl_enforcement: Disabled
   azure_db:
@@ -33,29 +49,29 @@ steps:
     returns:
       db_id: mysql_database_id
     AzureRM::Mysql_database:
-      name: myapp_db
+      name: $db
       resource_group_name: $myappdb_rg_name
       server_name: myapp-db
       charset: utf8
       collation: utf8_unicode_ci
-  MyApp_namespace:
+  namespace:
     returns:
-      MyApp_namespace: namespace_id
+      myapp_namespace: namespace_id
     Kubernetes::Namespace:
       metadata:
         name: myapp-ns
         labels:
           name: myapp-ns
-  MyApp_deployment:
+  myapp_deployment:
     parameters:
-      - MyApp_namespace
+      - myapp_namespace
       - db_address
     returns:
-      MyApp_ID: deployment_id
+      myapp_id: deployment_id
     Kubernetes::Deployment:
       metadata:
         name: myapp
-        namespace: myapp-ns
+        namespace: $myapp_namespace
         labels:
           app: myapp
       spec:
@@ -71,11 +87,11 @@ steps:
             init_container:
             - env:
               - name: LYRA_DBNAME
-                value: myapp_db
+                value: $db
               - name: LYRA_DBUSER
-                value: myapp_user
+                value: $dbuser
               - name: LYRA_DBPASS
-                value: efgh67890
+                value: $dbpass
               - name: LYRA_DBHOST
                 value: $db_address
               image: puppetseteam/myappdb_sampledata
@@ -83,30 +99,29 @@ steps:
             container:
             - env:
               - name: MYSQL_DATABASE
-                value: myapp_db
+                value: $db
               - name: MYSQL_USER
-                value: myapp_user
+                value: $dbuser
               - name: MYSQL_PASSWORD
-                value: efgh67890
+                value: $dbpass
               - name: MYSQL_SVC
                 value: $db_address
-              image: puppetseteam/pfc-myapp:538377
+              image: $appimage
               name: myapp
               port:
               - container_port: 80
                 host_port: 80
                 name: http
                 protocol: TCP
-  MyApp_service:
+  myapp_service:
     parameters:
-      - MyApp_namespace
-      - MyApp_ID
+      - myapp_id
     returns:
-      MyApp_service_ID: service_id
+      myapp_service_id: service_id
     Kubernetes::Service:
       metadata:
         name: myapp-service
-        namespace: myapp-ns
+        namespace: $myapp_namespace
       spec:
         selector:
           app: myapp
