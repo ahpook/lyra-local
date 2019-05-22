@@ -63,7 +63,7 @@ steps:
     Kubernetes::Deployment:
       metadata:
         name: myapp
-        namespace: myapp-ns
+        namespace: $myapp_namespace
         labels:
           app: myapp
       spec:
@@ -113,7 +113,7 @@ steps:
     Kubernetes::Service:
       metadata:
         name: myapp-service
-        namespace: myapp-ns
+        namespace: $myapp_namespace
       spec:
         selector:
           app: myapp

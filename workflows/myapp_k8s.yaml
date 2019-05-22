@@ -36,7 +36,7 @@ steps:
     Kubernetes::Deployment:
       metadata:
         name: myapp-db
-        namespace: myapp-ns
+        namespace: $myapp_namespace
         labels:
           app: myapp-db
       spec:
@@ -74,7 +74,7 @@ steps:
     Kubernetes::Service:
       metadata:
         name: myapp-db-service
-        namespace: myapp-ns
+        namespace: $myapp_namespace
       spec:
         selector:
           app: myapp-db
@@ -92,7 +92,7 @@ steps:
     Kubernetes::Deployment:
       metadata:
         name: myapp
-        namespace: myapp-ns
+        namespace: $myapp_namespace
         labels:
           app: myapp
       spec:
@@ -130,7 +130,7 @@ steps:
     Kubernetes::Service:
       metadata:
         name: myapp-service
-        namespace: myapp-ns
+        namespace: $myapp_namespace
       spec:
         selector:
           app: myapp
