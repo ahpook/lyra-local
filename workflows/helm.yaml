@@ -1,0 +1,24 @@
+# a workflow to test input parameters for the helm action
+parameters:
+  db:
+    type: String
+    lookup: helm.db
+steps:
+  helm:
+    parameters:
+      name: {value: "wprelease"}
+      chart: {value: "stable/wordpress"}
+      namespace: {value: null}     
+      overrides: 
+        value: 
+          externalDatabase.host: $db
+          key: value
+        # - $db
+        # - "wordpressBlogName=The Lyra Blog"
+        # - "mariadb.enabled=false"
+        # - "externalDatabase.database=wordpress"
+        # - "externalDatabase.user=wpuser"
+        # - "externalDatabase.password=wppass123"
+    returns:
+      helm_output: output
+    call: helm_go

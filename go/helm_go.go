@@ -12,7 +12,7 @@ import (
 type helmIn struct {
 	Name      string
 	Chart     string
-	Overrides []string
+	Overrides map[string]string
 	Namespace *string
 }
 
@@ -37,7 +37,16 @@ func helmInstall(in helmIn) helmOut {
 	}
 	if len(in.Overrides) > 0 {
 		args = append(args, "--set")
-		x := strings.Join(in.Overrides, ",")
+		overrides := []string{}
+
+		for key, value := range in.Overrides {
+			if key == "externalDatabase.host" {
+				// dirty hack to remove port number from the host
+				value = strings.Split(value, ":")[0]
+			}
+			overrides = append(overrides, fmt.Sprintf("%s=%s", key, value))
+		}
+		x := strings.Join(overrides, ",")
 		args = append(args, x)
 	}
 	cmd := exec.Command("helm", args...)

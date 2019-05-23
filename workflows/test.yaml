@@ -1,0 +1,6 @@
+steps:
+  aws_db_group:
+    Aws::Db_subnet_group:
+      name: test
+      subnet_ids:
+        - subnet-42ec6835

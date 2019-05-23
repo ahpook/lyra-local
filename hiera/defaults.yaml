@@ -1,8 +1,9 @@
 wordpress:
   location: ukwest
-  blogname: my awesome blog
-  dbuser: lyrauser
-  dbpass: Awesom3p4ass
+  blog_name: Lyra Blog
+  database_name: wordpress
+  database_user: lyrauser
+  database_password: Awesom3p4ass
 myapp:
   rootpw: abcd12345
   db: myapp_db

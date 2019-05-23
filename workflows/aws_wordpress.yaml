@@ -1,3 +1,16 @@
+parameters:
+  blog_name:
+    type: String
+    lookup: wordpress.blog_name
+  database_name:
+    type: String
+    lookup: wordpress.database_name
+  database_user:
+    type: String
+    lookup: wordpress.database_user
+  database_password:
+    type: String
+    lookup: wordpress.database_password
 steps:
   aws_db_group:
     returns: 
@@ -30,9 +43,9 @@ steps:
       identifier: lyra-wordpress
       engine: mysql
       instance_class: db.t2.micro
-      name: wordpress
-      username: wpuser
-      password: wppass123
+      name: $database_name
+      username: $database_user
+      password: $database_password
       allocated_storage: 20
       storage_type: gp2
       db_subnet_group_name: $subnet_group_name
@@ -43,18 +56,17 @@ steps:
 
   helm:
     parameters:
-      endpoint: {value: $database_endpoint}
       name: {value: "wprelease"}
       chart: {value: "stable/wordpress"}
       namespace: {value: null}     
       overrides: 
         value: 
-        - "wordpressBlogName=The Lyra Blog"
-        - "mariadb.enabled=false"
-        - "externalDatabase.database=wordpress"
-        - "externalDatabase.user=wpuser"
-        - "externalDatabase.password=wppass123"
-        - "externalDatabase.host=lyra-wordpress.c3o7vdgqsvan.eu-west-1.rds.amazonaws.com"
+          wordpressBlogName: $blog_name
+          mariadb.enabled: "false"
+          externalDatabase.database: $database_name
+          externalDatabase.user: $database_user
+          externalDatabase.password: $database_password
+          externalDatabase.host: $database_endpoint
     returns:
       helm_output: output
     call: helm_go
