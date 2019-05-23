@@ -63,7 +63,6 @@ steps:
               name: myapp-db
               port:
               - container_port: 3306
-                host_port: 3306
                 name: mysql
                 protocol: TCP
   myappdb_service:
@@ -119,7 +118,6 @@ steps:
               name: myapp
               port:
               - container_port: 80
-                host_port: 80
                 name: http
                 protocol: TCP
   myapp_service:
