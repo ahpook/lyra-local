@@ -11,3 +11,11 @@ myapp:
   dbpass: 'C0mpl3xPass!'
   dbimage: puppetseteam/pfc-myapp-db:461721
   appimage: puppetseteam/pfc-myapp:538377
+aws:
+  tags:
+    Name:       lyra-sample
+    created_by: lyra
+    department: engineering
+    project:    incubator
+    lifetime:   1h
+
