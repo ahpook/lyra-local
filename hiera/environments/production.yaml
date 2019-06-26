@@ -1,2 +1,4 @@
 wordpress:
-  dbpass: ProductionPassword
+  database_password: ProductionPassword
+foobernetes:
+  lb_policy: leastconns

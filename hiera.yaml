@@ -5,9 +5,9 @@ defaults:
   data_hash: yaml_data
 
 hierarchy:
+  - name: "Host-specific overrides"
+    path: "hosts/%{values.hostname}.yaml"
   - name: "Environmental overrides"
     path: "environments/%{environment}.yaml"
-    datadir: hiera
   - name: "Fall through defaults"
     path: "defaults.yaml"
-    datadir: hiera

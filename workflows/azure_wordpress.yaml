@@ -8,26 +8,36 @@ parameters:
     lookup: wordpress.blogname
   dbuser:
     type: String
-    lookup: wordpress.dbuser
+    lookup: wordpress.database_user
   dbpass:
-    type: String[10]
-    lookup: wordpress.dbpass
+    type: String[8]
+    lookup: wordpress.database_password
 steps:
   # this follow the terraform module: https://github.com/foreverXZC/terraform-azurerm-mysql
+  # the equivalent tf code:
+  #  module "mysql" {
+  #   source = "foreverXZC/mysql/azurerm"
+  #   db_name = "mydatabase"
+  #   location = "westeurope"
+  #   admin_username = "azureuser"
+  #   password = "P@ssw0rd12345!"
+  # }
   # first we need a resource group
   resource_group:
     returns: resource_group_id
-    AzureRM::Resource_group:
+    resource: AzureRM::Resource_group
+    value:
       name: lyra-mysql-rg
       location: $location
   mysql_server:
     parameters: resource_group_id # we are not using it, but forcing resource_group to be created first
     returns: mysql_server_id
-    AzureRM::Mysql_server:
+    resource: AzureRM::Mysql_server
+    value:
       name: lyra-mysql-server
       location: $location
       administrator_login: $dbuser
-      administrator_login_password: $dbpass
+      administrator_login_password: Aw3somePass
       resource_group_name: lyra-mysql-rg
       ssl_enforcement: Enabled
       version: "5.7"
@@ -44,14 +54,16 @@ steps:
   # now we can actually create the database
   mysql_db:
     returns: mysql_database_id
-    AzureRM::Mysql_database:
+    resource: AzureRM::Mysql_database
+    value:
       name: lyra-db
       resource_group_name: lyra-mysql-rg
       server_name: $mysql_server_id
   # and then add a firewall rule to access it
   mysql_fw_rule:
     returns: mysql_firewall_rule_id
-    AzureRM::Mysql_firewall_rule:
+    resource: AzureRM::Mysql_firewall_rule
+    value:
       name: permit-webhosts
       server_name: $mysql_server_id
       resource_group_name: lyra-mysql-rg
@@ -59,12 +71,14 @@ steps:
       end_ip_address: 95.215.121.72
   # now we can use Helm to do the app deployment onto kubernetes
   # this does require a funcitoning helm/tiller that we can access
-  # with kubernetes creds.  (and note, direct helm support is not yet working)
-  #wordpress:
-  #  Helm::Wordpress:
-  #    wordpressBlogName: $blogname
-  #    externaldatabase:
-  #      host: $mysql_server_id
-  #      database: $mysql_database_id
-  #      user: $dbuser
-  #      password: $dbpass
+  # with kubernetes creds.
+  helm_deploy:
+    resource: Helm::Release
+    value:
+      name: wordpress
+      chart: stable/wordpress
+      namespace: default
+      overrides: 
+        value: 
+          externalDatabase.host: $mysql_database_id
+          key: value

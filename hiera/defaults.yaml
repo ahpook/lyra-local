@@ -1,6 +1,6 @@
 wordpress:
   location: ukwest
-  blog_name: Lyra Blog
+  blogname: Lyra Blog
   database_name: wordpress
   database_user: lyrauser
   database_password: Awesom3p4ass
@@ -18,4 +18,5 @@ aws:
     department: engineering
     project:    incubator
     lifetime:   1h
-
+foobernetes:
+  lb_policy: rr
