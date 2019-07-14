@@ -19,4 +19,5 @@ aws:
     project:    incubator
     lifetime:   1h
 foobernetes:
-  lb_policy: rr
+  policies:
+    lb_policy: rr

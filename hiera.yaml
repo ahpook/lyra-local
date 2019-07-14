@@ -6,7 +6,7 @@ defaults:
 
 hierarchy:
   - name: "Host-specific overrides"
-    path: "hosts/%{values.hostname}.yaml"
+    path: "hosts/%{hostname}.yaml"
   - name: "Environmental overrides"
     path: "environments/%{environment}.yaml"
   - name: "Fall through defaults"
