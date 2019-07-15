@@ -1,0 +1,7 @@
+wordpress:
+  database_password: node_password
+clusters:
+  prod:
+    us:
+      central0: us-central-1-0
+      central1: us-central-1
